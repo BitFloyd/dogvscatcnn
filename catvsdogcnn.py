@@ -58,17 +58,23 @@ def plot_confusion_matrix(cm, classes,
 
 # Returns images and labels. The data structure of the images must be: path/class1, path/class2
 def get_data(path='path',size=(64,64)):
-    # Returns an array of images and labels for training the CNN
-    # Return 0 of cat and 1 for dog
+
+    # Returns an array of images and labels from path
+    # label_dict is a dictionary with value = 'class_name' and key = class_index
+    # The folder structure of path must be: path/class1 path/class2, etc
+
+    # For multiclass classification, you have to one-hot-encode np.array(labels) and return that
 
     list_images = []
     labels = []
+    label_dict = {}
 
-    for j in os.listdir(path):
+    for idx,j in enumerate(os.listdir(path)):
 
         if j == '.DS_Store':
             continue
 
+        label_dict[idx]=j
         list_image_names = os.listdir(os.path.join(path,j))
 
         print ("LOADING "+str(j)+" IMAGES FROM :", os.path.join(path,j))
@@ -77,16 +83,12 @@ def get_data(path='path',size=(64,64)):
             if i == '.DS_Store':
                 continue
 
-            if i.split('.')[0] == 'cat':
-                labels.append(0)
-
-            elif i.split('.')[0] == 'dog':
-                labels.append(1)
+            labels.append(idx)
 
             list_images.append(resize(imread(os.path.join(path,j,i)),output_shape=size))
 
 
-    return np.array(list_images), np.array(labels)
+    return np.array(list_images), np.array(labels), label_dict
 
 
 def return_CNN(input_shape=(64,64,3)):
@@ -114,7 +116,7 @@ def main():
 
     print ("GET FULL DATASET")
     # Get FULL Dataset
-    images, labels = get_data(os.path.join('dataset','training_set'))
+    images, labels, label_dict = get_data(os.path.join('dataset','training_set'))
 
     print ("SHUFFLE DATASET")
     # Shuffle dataset
@@ -185,7 +187,7 @@ def main():
 
     print ("PLOT CONFUSION MATRIX FOR TEST SET SPLIT")
     plt.figure()
-    plot_confusion_matrix(cnf_matrix, classes=['cat','dog'],save_fig_name='confusion_matrix_test_set_split')
+    plot_confusion_matrix(cnf_matrix, classes=label_dict.values(),save_fig_name='confusion_matrix_test_set_split')
     plt.show()
 
 
@@ -193,7 +195,7 @@ def main():
     del images_test,images_val,images_train,labels_test,labels_val,labels_train,predictions_test,cnf_matrix
 
     print ("LOAD NEW TEST SET")
-    images_new_test, labels_new_test = get_data(os.path.join('dataset','test_set'))
+    images_new_test, labels_new_test,label_dict = get_data(os.path.join('dataset','test_set'))
 
     print ("PREDICT ON NEW TEST SET")
     predictions_new_test = (model.predict(images_new_test) > 0.5)
@@ -211,7 +213,7 @@ def main():
 
     print ("PLOT CONFUSION MATRIX FOR TEST SET")
     plt.figure()
-    plot_confusion_matrix(cnf_matrix, classes=['cat','dog'],save_fig_name='confusion_matrix_new_test_set')
+    plot_confusion_matrix(cnf_matrix, classes=label_dict.values(),save_fig_name='confusion_matrix_new_test_set')
     plt.show()
 
 if __name__ == "__main__":
