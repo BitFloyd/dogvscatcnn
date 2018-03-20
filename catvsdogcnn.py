@@ -164,7 +164,8 @@ def main():
     # fits the model on batches with real-time data augmentation:
     model.fit_generator(datagen_train.flow(images_train, labels_train, batch_size=32),
                         steps_per_epoch=len(images_train) / 32, epochs=200, callbacks=[es, rlr,mcp],
-                        validation_data=datagen_val.flow(images_val,labels_val,batch_size=32),validation_steps=len(images_val)/32)
+                        validation_data=datagen_val.flow(images_val,labels_val,batch_size=32),
+                        validation_steps=len(images_val)/32)
 
 
     # Get accuracy of model on test_data.
